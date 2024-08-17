@@ -23,7 +23,7 @@
 |     7 | Ciphertext+tag | Bytes               |
 +-------+----------------+---------------------+
 P.S. LE = Little Endian
-P.P.S. file will be 93 bytes larger.
+P.P.S. by default file will be 93 bytes larger.
 */
 
 void secure_delete(const char *filename) {

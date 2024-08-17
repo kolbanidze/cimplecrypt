@@ -27,7 +27,7 @@
 |     7 | Ciphertext+tag | Bytes               |
 +-------+----------------+---------------------+
 P.S. LE = Little Endian
-P.P.S. file will be 93 bytes larger.
+P.P.S. by default file will be 93 bytes larger.
 */
 
 size_t get_file_size(const char *filename) {
@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
         perror("Failed to initialize libsodium!");
         exit(EXIT_FAILURE);
     }
-
+    
     // Parsing arguments
     static struct option long_options[] = {
         {"opslimit", required_argument, 0, 'c'},
@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
         {"saltlen", required_argument, 0, 's'},
         {"password", required_argument, 0, 'P'},
         {"output", required_argument, 0, 'o'},
-        {"delete-original", no_argument, 0, 'd'},
+        {"delete", no_argument, 0, 'd'},
         {"secure-delete", no_argument, 0, 'x'},
         {"overwrite-file", no_argument, 0, 'f'},
         {"help", no_argument, 0, 'h'},
@@ -169,8 +169,60 @@ int main(int argc, char *argv[]) {
             default: exit(EXIT_FAILURE);
         }
     }
+    
     if (help_flag) {
-        printf("TODO\n");
+/* ./encrypt --help
+usage: encrypt  [-h] [-c OPSLIMIT] [-m MEMORYLIMIT] [-s SALT_SIZE]
+                [-P PASSWORD] [-o OUTPUT] [-d | --delete]
+                [-x | --secure-delete] [-f | --overwrite-file]
+                [--i-know-what-i-am-doing]
+                file
+
+Simple encryption tool in C. KDF: Argon2 (ID). Symmetric cipher: AEGIS-256
+
+positional arguments:
+  file                  file to encrypt
+
+options:
+  -h, --help            show this help message and exit
+  -c OPSLIMIT, --opslimit OPSLIMIT
+                        libsodium argon2id opslimit (cpu cycles)
+  -m MEMLIMIT, --memlimit MEMLIMIT
+                        libsodium argon2id memlimit (memory usage)
+  -s SALT_LENGTH, --saltlen SALT_LENGTH
+                        argon2 salt size. Default 16 bytes
+  -P PASSWORD, --password PASSWORD
+                        password
+  -o OUTPUT, --output OUTPUT
+                        output file
+  -Q, --i-know-what-i-am-doing
+                        use KDF parameters values less than recommended
+  -d, --delete          delete original (unencrypted) file without overwriting
+                        (not secure)
+  -x, --secure-delete   delete original (unencrypted) file with US DoD
+                        5220.22-M 3 pass
+  -f, --overwrite-file  when you try to encrypt 'test' but directory contains
+                        'test.cc' that parameter will allow overwriting
+                        'test.cc'
+*/
+        printf("usage: encrypt  [-h] [-c OPSLIMIT] [-m MEMORYLIMIT] [-s SALT_SIZE]\n");
+        printf("                [-P PASSWORD] [-o OUTPUT] [-d | --delete]\n");
+        printf("                [-x | --secure-delete] [-f | --overwrite-file]\n");
+        printf("                [--i-know-what-i-am-doing]\n");
+        printf("                file\n\n");
+        printf("Simple encryption tool in C. KDF: Argon2 (ID). Symmetric cipher: AEGIS-256\n\n");
+        printf("positional arguments:\n  file                  file to encrypt\n\n");
+        printf("options:\n");
+        printf("  -h, --help            show this help message and exit\n");
+        printf("  -c OPSLIMIT, --opslimit OPSLIMIT\n                        libsodium argon2id opslimit (cpu cycles)\n");
+        printf("  -m MEMLIMIT, --memlimit MEMLIMIT\n                        libsodium argon2id memlimit (memory usage)\n");
+        printf("  -s SALT_LENGTH, --saltlen SALT_LENGTH\n                        argon2 salt size. Default 16 bytes\n");
+        printf("  -P PASSWORD, --password PASSWORD\n                        password\n");
+        printf("  -o OUTPUT, --output OUTPUT\n                        output file\n");
+        printf("  -Q, --i-know-what-i-am-doing\n                        use KDF parameters values less than recommended\n");
+        printf("  -d, --delete          delete original (unencrypted) file without overwriting\n                        (not secure)\n");
+        printf("  -x, --secure-delete   delete original (unencrypted) file with US DoD\n                        5220.22-M 3 pass\n");
+        printf("  -f, --overwrite-file  when you try to encrypt 'test' but directory contains\n                        'test%s' that parameter will allow overwriting\n                        'test%s'\n", FILE_EXTENSION, FILE_EXTENSION);
         exit(EXIT_SUCCESS);
     }
 
