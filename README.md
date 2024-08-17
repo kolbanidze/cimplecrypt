@@ -10,12 +10,17 @@ Default KDF parameters - OPSLIMIT (CPU cycles) = 3, MEMLIMIT (memory usage) = 25
 ## Build
 
 Install requirements
+
 Fedora: `sudo dnf install make gcc libsodium libsodium-devel`
+
 Ubuntu: `sudo dnf install make gcc libsodium libsodium-dev`
 
 `git clone https://github.com/kolbanidze/cimplecrypt`
+
 `cd cimplecrypt`
+
 `make`
+
 Compiled binaries will be in bin/ directory
 
 ## Usage
