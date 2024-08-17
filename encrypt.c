@@ -231,7 +231,7 @@ options:
         printf("If you know what you are doing, then use the --i-know-what-i-am-doing (-Q) parameter.\n");
         exit(EXIT_FAILURE);
     }
-    if (opslimit < crypto_pwhash_OPSLIMIT_MIN || memlimit < crypto_pwhash_MEMLIMIT_MIN) {
+    if (opslimit < crypto_pwhash_OPSLIMIT_MIN || memlimit < crypto_pwhash_MEMLIMIT_MIN || saltlen < 8) {
         printf("The selected parameters are below the minimum security level!");
         exit(EXIT_FAILURE);
     }
@@ -302,13 +302,41 @@ options:
         fprintf(stderr, "Failed to open output file!\n");
         exit(EXIT_FAILURE);
     }
-    fwrite(&magic_header, sizeof(magic_header), 1, fp);
-    fwrite(&opslimit, sizeof(opslimit), 1, fp);
-    fwrite(&memlimit, sizeof(memlimit), 1, fp);
-    fwrite(&saltlen, sizeof(saltlen), 1, fp);
-    fwrite(&salt, 1, saltlen, fp);
-    fwrite(&nonce, 1, crypto_aead_aegis256_NPUBBYTES, fp);
-    fwrite(&ciphertext, 1, ciphertext_len, fp);
+    if (fwrite(&magic_header, sizeof(magic_header), 1, fp) != 1) {
+        printf("Failed to write magic header to encrypted file!\n");
+        sodium_memzero(input_file, strlen(input_file));
+        exit(EXIT_FAILURE);
+    }
+    if (fwrite(&opslimit, sizeof(opslimit), 1, fp) != 1) {
+        printf("Failed to write opslimit to encrypted file!\n");
+        sodium_memzero(input_file, strlen(input_file));
+        exit(EXIT_FAILURE);
+    }
+    if (fwrite(&memlimit, sizeof(memlimit), 1, fp) != 1) {
+        printf("Failed to write memlimit to encrypted file!\n");
+        sodium_memzero(input_file, strlen(input_file));
+        exit(EXIT_FAILURE);
+    }
+    if (fwrite(&saltlen, sizeof(saltlen), 1, fp) != 1) {
+        printf("Failed to write saltlen to encrypted file!\n");
+        sodium_memzero(input_file, strlen(input_file));
+        exit(EXIT_FAILURE);
+    }
+    if (fwrite(&salt, 1, saltlen, fp) != saltlen) {
+        printf("Failed to write salt to encrypted file!\n");
+        sodium_memzero(input_file, strlen(input_file));
+        exit(EXIT_FAILURE);
+    }
+    if (fwrite(&nonce, 1, crypto_aead_aegis256_NPUBBYTES, fp) != crypto_aead_aegis256_NPUBBYTES) {
+        printf("Failed to write salt to encrypted file!\n");
+        sodium_memzero(input_file, strlen(input_file));
+        exit(EXIT_FAILURE);
+    }
+    if (fwrite(&ciphertext, 1, ciphertext_len, fp) != ciphertext_len) {
+        printf("Failed to write ciphertext to encrypted file!\n");
+        sodium_memzero(input_file, strlen(input_file));
+        exit(EXIT_FAILURE);
+    }
     fflush(fp);
     fclose(fp);
     printf("[Success] File %s was encrypted. Output file: %s\n", input_file, output_file);

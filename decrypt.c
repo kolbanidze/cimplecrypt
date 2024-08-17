@@ -169,6 +169,12 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    // Checking if output file already exists.
+    if ((access(output_file, F_OK) == 0) && !overwrite_flag) {
+        printf("File %s already exists. Use -f to overwrite\n.", output_file);
+        exit(EXIT_FAILURE);
+    }
+
     // Getting password without echoing it.
     if (!password) {
         password = getpass("Enter password (no echo): ");
@@ -196,12 +202,6 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "Selected file doesn't have %s extension. Select output file!\n", FILE_EXTENSION);
             exit(EXIT_FAILURE);
         }
-    }
-    
-    // Checking if output file already exists.
-    if ((access(output_file, F_OK) == 0) && !overwrite_flag) {
-        printf("File %s already exists. Use -f to overwrite\n.", output_file);
-        exit(EXIT_FAILURE);
     }
 
     // Getting file size
