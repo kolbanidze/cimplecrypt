@@ -13,6 +13,7 @@
 #define MEMLIMIT crypto_pwhash_MEMLIMIT_MODERATE
 #define FILE_EXTENSION ".cc"
 #define MAGIC_HEADER 0xBADC0DE
+#define VERSION "1.1"
 
 /*FILE FORMAT: 1-6 -> Header
 +-------+----------------+---------------------+
@@ -143,11 +144,12 @@ int main(int argc, char *argv[]) {
         {"overwrite-file", no_argument, 0, 'f'},
         {"help", no_argument, 0, 'h'},
         {"i-know-what-i-am-doing", no_argument, 0, 'Q'},
+        {"version", no_argument, 0, 'v'},
         {0, 0, 0, 0}
     };
 
     int opt; 
-    while ((opt = getopt_long(argc, argv, "c:m:s:P:o:dxfQh", long_options, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "c:m:s:P:o:dxfQhv", long_options, NULL)) != -1) {
         switch(opt) {
             case 'c': opslimit = atoi(optarg); break;
             case 'm': memlimit = atoi(optarg); break;
@@ -166,6 +168,7 @@ int main(int argc, char *argv[]) {
             case 'f': overwrite_file_flag = 1; break;
             case 'h': help_flag = 1; break;
             case 'Q': i_know_what_i_am_doing = 1; break;
+            case 'v': printf("Version: %s\n", VERSION); exit(EXIT_SUCCESS);
             default: exit(EXIT_FAILURE);
         }
     }
@@ -204,6 +207,7 @@ options:
   -f, --overwrite-file  when you try to encrypt 'test' but directory contains
                         'test.cc' that parameter will allow overwriting
                         'test.cc'
+  -v, --version         shows version
 */
         printf("usage: encrypt  [-h] [-c OPSLIMIT] [-m MEMORYLIMIT] [-s SALT_SIZE]\n");
         printf("                [-P PASSWORD] [-o OUTPUT] [-d | --delete]\n");
@@ -223,6 +227,7 @@ options:
         printf("  -d, --delete          delete original (unencrypted) file without overwriting\n                        (not secure)\n");
         printf("  -x, --secure-delete   delete original (unencrypted) file with US DoD\n                        5220.22-M 3 pass\n");
         printf("  -f, --overwrite-file  when you try to encrypt 'test' but directory contains\n                        'test%s' that parameter will allow overwriting\n                        'test%s'\n", FILE_EXTENSION, FILE_EXTENSION);
+        printf("  -v, --version         shows version\n");
         exit(EXIT_SUCCESS);
     }
 

@@ -101,6 +101,7 @@ options:
   -f, --overwrite-file  when you try to encrypt 'test' but directory contains
                         'test.cc' that parameter will allow overwriting
                         'test.cc'
+  -v, --version         shows version
 ```
 
 ```
@@ -127,4 +128,5 @@ options:
   -f, --overwrite-file  when you try to encrypt 'test' but directory contains
                         'test.cc' that parameter will allow overwriting
                         'test.cc'
+  -v, --version         shows version
 ```

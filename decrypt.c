@@ -9,6 +9,7 @@
 
 #define FILE_EXTENSION ".cc"
 #define MAGIC_HEADER 0xBADC0DE
+#define VERSION "1.1"
 
 /*FILE FORMAT: 1-6 -> Header
 +-------+----------------+---------------------+
@@ -108,11 +109,12 @@ int main(int argc, char *argv[]) {
         {"secure-delete", no_argument, 0, 'x'},
         {"overwrite-file", no_argument, 0, 'f'},
         {"help", no_argument, 0, 'h'},
+        {"version", no_argument, 0, 'v'},
         {0, 0, 0, 0}
     };
     
     int opt;
-    while ((opt = getopt_long(argc, argv, "o:P:dxfh", long_options, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "o:P:dxfhv", long_options, NULL)) != -1) {
         switch(opt) {
             case 'o': 
                 output_file = malloc(strlen(optarg)+1);
@@ -127,6 +129,7 @@ int main(int argc, char *argv[]) {
             case 'x': secure_delete_flag = 1; break;
             case 'f': overwrite_flag = 1; break;
             case 'h': help_flag = 1; break;
+            case 'v': printf("Version: %s\n", VERSION); exit(EXIT_SUCCESS);
             default: exit(EXIT_FAILURE);
         }
     }
@@ -145,6 +148,7 @@ int main(int argc, char *argv[]) {
         printf("  -d, --delete          delete original (unencrypted) file without overwriting\n                        (not secure)\n");
         printf("  -x, --secure-delete   delete original (unencrypted) file with US DoD\n                        5220.22-M 3 pass\n");
         printf("  -f, --overwrite-file  when you try to encrypt 'test' but directory contains\n                        'test%s' that parameter will allow overwriting\n                        'test%s'\n", FILE_EXTENSION, FILE_EXTENSION);
+        printf("  -v, --version         shows version\n");
         exit(EXIT_SUCCESS);
     }
 
