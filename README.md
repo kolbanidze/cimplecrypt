@@ -64,3 +64,67 @@ user@linux:~$ sha256sum 1MiB.bin
 P.S. LE = Little Endian
 P.P.S. by default encrypted file will be 93 bytes larger than unencrypted.
 ```
+
+## ~~--help output~~ Guide
+
+```
+./encrypt --help
+usage: encrypt  [-h] [-c OPSLIMIT] [-m MEMORYLIMIT] [-s SALT_SIZE]
+                [-P PASSWORD] [-o OUTPUT] [-d | --delete]
+                [-x | --secure-delete] [-f | --overwrite-file]
+                [--i-know-what-i-am-doing]
+                file
+
+Simple encryption tool in C. KDF: Argon2 (ID). Symmetric cipher: AEGIS-256
+
+positional arguments:
+  file                  file to encrypt
+
+options:
+  -h, --help            show this help message and exit
+  -c OPSLIMIT, --opslimit OPSLIMIT
+                        libsodium argon2id opslimit (cpu cycles)
+  -m MEMLIMIT, --memlimit MEMLIMIT
+                        libsodium argon2id memlimit (memory usage)
+  -s SALT_LENGTH, --saltlen SALT_LENGTH
+                        argon2 salt size. Default 16 bytes
+  -P PASSWORD, --password PASSWORD
+                        password
+  -o OUTPUT, --output OUTPUT
+                        output file
+  -Q, --i-know-what-i-am-doing
+                        use KDF parameters values less than recommended
+  -d, --delete          delete original (unencrypted) file without overwriting
+                        (not secure)
+  -x, --secure-delete   delete original (unencrypted) file with US DoD
+                        5220.22-M 3 pass
+  -f, --overwrite-file  when you try to encrypt 'test' but directory contains
+                        'test.cc' that parameter will allow overwriting
+                        'test.cc'
+```
+
+```
+./decrypt --help
+usage: decrypt  [-h] [-P PASSWORD] [-o OUTPUT] [-d | --delete]
+                [-x | --secure-delete] [-f | --overwrite-file]
+                file
+
+Simple decryption tool in C. KDF: Argon2 (ID). Symmetric cipher: AEGIS-256
+
+positional arguments:
+  file                  file to encrypt
+
+options:
+  -h, --help            show this help message and exit
+  -P PASSWORD, --password PASSWORD
+                        password
+  -o OUTPUT, --output OUTPUT
+                        output file
+  -d, --delete          delete original (unencrypted) file without overwriting
+                        (not secure)
+  -x, --secure-delete   delete original (unencrypted) file with US DoD
+                        5220.22-M 3 pass
+  -f, --overwrite-file  when you try to encrypt 'test' but directory contains
+                        'test.cc' that parameter will allow overwriting
+                        'test.cc'
+```
