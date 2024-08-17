@@ -7,7 +7,7 @@
 #include <getopt.h>
 #include <sodium.h>
 
-#define DEFAULT_EXTENSION ".cc"
+#define FILE_EXTENSION ".cc"
 #define MAGIC_HEADER 0xBADC0DE
 
 /*FILE FORMAT: 1-6 -> Header
@@ -133,7 +133,18 @@ int main(int argc, char *argv[]) {
 
     // Displaying help
     if (help_flag) {
-        printf("TODO");
+        printf("usage: decrypt  [-h] [-P PASSWORD] [-o OUTPUT] [-d | --delete]\n");
+        printf("                [-x | --secure-delete] [-f | --overwrite-file]\n");
+        printf("                file\n\n");
+        printf("Simple decryption tool in C. KDF: Argon2 (ID). Symmetric cipher: AEGIS-256\n\n");
+        printf("positional arguments:\n  file                  file to encrypt\n\n");
+        printf("options:\n");
+        printf("  -h, --help            show this help message and exit\n");
+        printf("  -P PASSWORD, --password PASSWORD\n                        password\n");
+        printf("  -o OUTPUT, --output OUTPUT\n                        output file\n");
+        printf("  -d, --delete          delete original (unencrypted) file without overwriting\n                        (not secure)\n");
+        printf("  -x, --secure-delete   delete original (unencrypted) file with US DoD\n                        5220.22-M 3 pass\n");
+        printf("  -f, --overwrite-file  when you try to encrypt 'test' but directory contains\n                        'test%s' that parameter will allow overwriting\n                        'test%s'\n", FILE_EXTENSION, FILE_EXTENSION);
         exit(EXIT_SUCCESS);
     }
 
@@ -170,19 +181,19 @@ int main(int argc, char *argv[]) {
         char *extension = NULL;
         extension = strrchr(input_file, '.');
         if (extension != NULL) {
-            if (strcmp(extension, DEFAULT_EXTENSION) == 0) {
+            if (strcmp(extension, FILE_EXTENSION) == 0) {
                 size_t output_size = strlen(input_file)-3;
                 output_file = malloc(output_size+1);
                 strncpy(output_file, input_file, output_size);
                 output_file[output_size] = '\0';
             }
             else {
-                fprintf(stderr, "Selected file doesn't have %s extension. Select output file!\n", DEFAULT_EXTENSION);
+                fprintf(stderr, "Selected file doesn't have %s extension. Select output file!\n", FILE_EXTENSION);
                 exit(EXIT_FAILURE);
             }
         }
         else {
-            fprintf(stderr, "Selected file doesn't have %s extension. Select output file!\n", DEFAULT_EXTENSION);
+            fprintf(stderr, "Selected file doesn't have %s extension. Select output file!\n", FILE_EXTENSION);
             exit(EXIT_FAILURE);
         }
     }
