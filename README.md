@@ -30,6 +30,24 @@ Compiled binaries will be in bin/ directory
 
 For help use -h (--help)
 
+## Usage example
+
+```
+user@linux:~$ dd if=/dev/urandom of=1MiB.bin bs=1MiB count=1
+1+0 records in
+1+0 records out
+1048576 bytes (1.0 MB, 1.0 MiB) copied, 0.0116245 s, 90.2 MB/s
+user@linux:~$ sha256sum 1MiB.bin 
+35e0259a18b034ee9a8408df107a75cbb3619a63298deb94138f2cf7122c23d4  1MiB.bin
+user@linux:~$ ./encrypt 1MiB.bin -P 123 -x
+[Success] File 1MiB.bin was encrypted. Output file: 1MiB.bin.cc
+user@linux:~$ ./decrypt 1MiB.bin.cc -P 123 -x
+[Success] File '1MiB.bin.cc' was decrypted. Output file: '1MiB.bin'
+user@linux:~$ sha256sum 1MiB.bin 
+35e0259a18b034ee9a8408df107a75cbb3619a63298deb94138f2cf7122c23d4  1MiB.bin
+```
+-x (--secure-delete) securely deletes file ¯\\_(ツ)_/¯
+
 ## Encrypted file format
 ```
 +-------+----------------+---------------------+
