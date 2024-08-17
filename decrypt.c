@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
     while ((opt = getopt_long(argc, argv, "o:P:dxfh", long_options, NULL)) != -1) {
         switch(opt) {
             case 'o': 
-                output_file = malloc(strlen(optarg));
+                output_file = malloc(strlen(optarg)+1);
                 if (output_file) strcpy(output_file, optarg);
                 else {
                     fprintf(stderr, "Failed to allocate memory\n!");

@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
             case 's': saltlen = atoi(optarg); break;
             case 'P': password = optarg; break;
             case 'o': 
-                output_file = malloc(strlen(optarg));
+                output_file = malloc(strlen(optarg)+1);
                 if (output_file) strcpy(output_file, optarg);
                 else {
                     fprintf(stderr, "Failed to allocate memory!\n"); 
@@ -246,7 +246,7 @@ options:
 
     // If user hasn't specified output file it will save encrypted file in {filename}.sc (if FILE_EXTENSION is .sc).
     if (!output_file) {
-        output_file = malloc(strlen(input_file) + strlen(FILE_EXTENSION) + 1); // DOES IT REQUIRE +1 ????????????????????????????????????????????
+        output_file = malloc(strlen(input_file) + strlen(FILE_EXTENSION) + 1);
         strcpy(output_file, input_file); // Copying original filename to output_file
         strcat(output_file, FILE_EXTENSION); // Concatenate filename+extension
     }
