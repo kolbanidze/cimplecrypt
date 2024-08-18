@@ -1,6 +1,6 @@
 # Cimplecrypt
 
-Simple file encryption in C with libsodium. Created out of boredom during summer vacation. Linux only (of course it is possible to port it to Windows, but I am too lazy).
+Cross platform simple file encryption in C with libsodium. Created out of boredom during summer vacation. Supports windows (msvc) and linux (gcc). 
 
 ## Encryption
 For encryption it uses AEGIS-256. As a KDF - Argon2 ID (libsodium implementation).
@@ -9,11 +9,15 @@ Default KDF parameters - OPSLIMIT (CPU cycles) = 3, MEMLIMIT (memory usage) = 25
 
 ## Build
 
-Install requirements
+### Linux
 
-Fedora: `sudo dnf install make gcc libsodium libsodium-devel`
+Libraries: [libsodium](https://doc.libsodium.org/), [cargs](https://github.com/likle/cargs). Licenses for those libraries available in the root of repository.
 
-Ubuntu: `sudo dnf install make gcc libsodium libsodium-dev`
+Required to build: libsodium >= 1.0.19, gcc, make, cargs (located in include directory). 
+
+#### Fedora build example:
+
+`sudo dnf install make gcc libsodium libsodium-devel libsodium-static glibc-static`
 
 `git clone https://github.com/kolbanidze/cimplecrypt`
 
@@ -23,30 +27,17 @@ Ubuntu: `sudo dnf install make gcc libsodium libsodium-dev`
 
 Compiled binaries will be in bin/ directory
 
+At the time of writing, the Ubuntu repositories contain Libsodium version 1.0.18. To build, you will need to install a newer version (1.0.19 and above). This can be done by [building Libsodium yourself](https://libsodium.gitbook.io/doc/installation#compilation-on-unix-like-systems).
+
+### Windows
+From developer command prompt for visual studio execute `build_win.bat`
+
 ## Usage
 
-`./encrypt` to encrypt
-`./decrypt` to decrypt
+`./encrypt file` to encrypt file
+`./decrypt file.cc` to decrypt file.cc
 
 For help use -h (--help)
-
-## Usage example
-
-```
-user@linux:~$ dd if=/dev/urandom of=1MiB.bin bs=1MiB count=1
-1+0 records in
-1+0 records out
-1048576 bytes (1.0 MB, 1.0 MiB) copied, 0.0116245 s, 90.2 MB/s
-user@linux:~$ sha256sum 1MiB.bin 
-35e0259a18b034ee9a8408df107a75cbb3619a63298deb94138f2cf7122c23d4  1MiB.bin
-user@linux:~$ ./encrypt 1MiB.bin -P 123 -x
-[Success] File 1MiB.bin was encrypted. Output file: 1MiB.bin.cc
-user@linux:~$ ./decrypt 1MiB.bin.cc -P 123 -x
-[Success] File '1MiB.bin.cc' was decrypted. Output file: '1MiB.bin'
-user@linux:~$ sha256sum 1MiB.bin 
-35e0259a18b034ee9a8408df107a75cbb3619a63298deb94138f2cf7122c23d4  1MiB.bin
-```
--x (--secure-delete) securely deletes file ¯\\_(ツ)_/¯
 
 ## Encrypted file format
 ```
@@ -65,68 +56,30 @@ P.S. LE = Little Endian
 P.P.S. by default encrypted file will be 93 bytes larger than unencrypted.
 ```
 
-## ~~--help output~~ Guide
+## Guide
 
 ```
-./encrypt --help
-usage: encrypt  [-h] [-c OPSLIMIT] [-m MEMORYLIMIT] [-s SALT_SIZE]
-                [-P PASSWORD] [-o OUTPUT] [-d | --delete]
-                [-x | --secure-delete] [-f | --overwrite-file]
-                [--i-know-what-i-am-doing]
-                file
-
-Simple encryption tool in C. KDF: Argon2 (ID). Symmetric cipher: AEGIS-256
-
-positional arguments:
-  file                  file to encrypt
-
-options:
-  -h, --help            show this help message and exit
-  -c OPSLIMIT, --opslimit OPSLIMIT
-                        libsodium argon2id opslimit (cpu cycles)
-  -m MEMLIMIT, --memlimit MEMLIMIT
-                        libsodium argon2id memlimit (memory usage)
-  -s SALT_LENGTH, --saltlen SALT_LENGTH
-                        argon2 salt size. Default 16 bytes
-  -P PASSWORD, --password PASSWORD
-                        password
-  -o OUTPUT, --output OUTPUT
-                        output file
-  -Q, --i-know-what-i-am-doing
-                        use KDF parameters values less than recommended
-  -d, --delete          delete original (unencrypted) file without overwriting
-                        (not secure)
-  -x, --secure-delete   delete original (unencrypted) file with US DoD
-                        5220.22-M 3 pass
-  -f, --overwrite-file  when you try to encrypt 'test' but directory contains
-                        'test.cc' that parameter will allow overwriting
-                        'test.cc'
-  -v, --version         shows version
+Usage: encrypt [OPTIONS] file
+  -h, --help                       show this help message and exit
+  -c, --opslimit=OPSLIMIT          libsodium argon2id opslimit (cpu cycles)
+  -m, --memlimit=MEMLIMIT          libsodium argon2id memlimit (memory usage)
+  -s, --saltlen=SALT_LENGTH        argon2 salt size. Default 16 bytes
+  -p, --password=PASSWORD          password
+  -o, --output=OUTPUT              output file
+  -Q, --i-know-what-i-am-doing     use KDF parameters values less than recommended
+  -d, --delete                     delete original (unencrypted) file without overwriting (not secure)
+  -x, --secure-delete              delete original (unencrypted) file with US DoD 5220.22-M 3 pass
+  -f, --overwrite-file             if directory contains 'test.cc' that parameter will allow overwriting
+  -v, --version                    shows version
 ```
 
 ```
-./decrypt --help
-usage: decrypt  [-h] [-P PASSWORD] [-o OUTPUT] [-d | --delete]
-                [-x | --secure-delete] [-f | --overwrite-file]
-                file
-
-Simple decryption tool in C. KDF: Argon2 (ID). Symmetric cipher: AEGIS-256
-
-positional arguments:
-  file                  file to encrypt
-
-options:
-  -h, --help            show this help message and exit
-  -P PASSWORD, --password PASSWORD
-                        password
-  -o OUTPUT, --output OUTPUT
-                        output file
-  -d, --delete          delete original (unencrypted) file without overwriting
-                        (not secure)
-  -x, --secure-delete   delete original (unencrypted) file with US DoD
-                        5220.22-M 3 pass
-  -f, --overwrite-file  when you try to encrypt 'test' but directory contains
-                        'test.cc' that parameter will allow overwriting
-                        'test.cc'
-  -v, --version         shows version
+Usage: decrypt [OPTIONS] file
+  -h, --help                  show this help message and exit
+  -p, --password=PASSWORD     password
+  -o, --output=OUTPUT         output file
+  -d, --delete                delete original (encrypted) file without overwriting (not secure)
+  -x, --secure-delete         delete original (encrypted) file with US DoD 5220.22-M 3 pass
+  -f, --overwrite-file        if directory contains 'test.cc' that parameter will allow overwriting
+  -v, --version               shows version
 ```

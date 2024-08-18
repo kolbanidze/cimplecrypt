@@ -2,14 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <stdint.h>
-#include <getopt.h>
 #include <sodium.h>
+#include <string.h>
+#include <cargs.h>
+#include "utils.c"
 
 #define FILE_EXTENSION ".cc"
 #define MAGIC_HEADER 0xBADC0DE
-#define VERSION "1.1"
+#define VERSION "1.2"
 
 /*FILE FORMAT: 1-6 -> Header
 +-------+----------------+---------------------+
@@ -27,61 +28,45 @@ P.S. LE = Little Endian
 P.P.S. by default file will be 93 bytes larger.
 */
 
-void secure_delete(const char *filename) {
-    size_t file_size;
-    FILE *fp = fopen(filename, "r+b");
-    
-    fseek(fp, 0, SEEK_END);
-    file_size = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
+static struct cag_option options[] = {
+    {.identifier = 'h',
+    .access_letters = "h",
+    .access_name = "help",
+    .description = "show this help message and exit"},
 
-    if (!fp) {
-        fprintf(stderr, "Failed to open file for secure deletion");
-        return;
-    }
+    {.identifier = 'p',
+    .access_letters = "p",
+    .access_name = "password",
+    .value_name = "PASSWORD",
+    .description = "password"},
 
-    // First pass with zeroes
-    for (size_t i = 0; i < file_size; i++) {
-        fputc(0x00, fp);
-    }
-    fflush(fp);
-    fsync(fileno(fp));
-    rewind(fp);
+    {.identifier = 'o',
+    .access_letters = "o",
+    .access_name = "output",
+    .value_name = "OUTPUT",
+    .description = "output file"},
 
-    // Second pass with ones
-    for (size_t i = 0; i < file_size; i++) {
-        fputc(0xFF, fp);
-    }
-    fflush(fp);
-    fsync(fileno(fp));
-    rewind(fp);
+    {.identifier = 'd',
+    .access_letters = "d",
+    .access_name = "delete",
+    .description = "delete original (encrypted) file without overwriting (not secure)"},
 
-    // Third pass with random data
-    for (size_t i = 0; i < file_size; i++) {
-        fputc(randombytes_random(), fp);
-    }
-    fflush(fp);
-    fsync(fileno(fp));
-    fclose(fp);
+    {.identifier = 'x',
+    .access_letters = "x",
+    .access_name = "secure-delete",
+    .description = "delete original (encrypted) file with US DoD 5220.22-M 3 pass"},
 
-    // Erasing file name
-    // I am still not sure how that code work. But it works
-    char tmp[strlen(filename)];
-    for (size_t i = strlen(filename); i > 0; i--) {
-        char new_name[i + 1];
-        for (size_t j = 0; j < i; j++) {
-            new_name[j] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"[randombytes_uniform(62)];
-        }
-        new_name[i] = '\0';
+    {.identifier = 'f',
+    .access_letters = "f",
+    .access_name = "overwrite-file",
+    .description = "if directory contains 'test.cc' that parameter will allow overwriting"},
 
-        rename(filename, new_name);
-        for (size_t j = 0; j < i+1; j++) {
-            tmp[j] = new_name[j];
-        }
-        filename = tmp;
-    }
-    remove(filename);
-}
+    {.identifier = 'v',
+    .access_letters = "v",
+    .access_name = "version",
+    .description = "shows version"}
+};
+
 
 int main(int argc, char *argv[]) {
     // Executing sodium_init() to ensure libsodium works correctly
@@ -96,70 +81,48 @@ int main(int argc, char *argv[]) {
     char *password = NULL;
     int delete_original_flag = 0;
     int secure_delete_flag = 0;
-    int overwrite_flag = 0;
-    int help_flag = 0;
+    int overwrite_file_flag = 0;
 
     const uint32_t magic_header = MAGIC_HEADER;
     
     // Parsing cli parameters
-    static struct option long_options[] = {
-        {"output", required_argument, 0, 'o'},
-        {"password", required_argument, 0, 'P'},
-        {"delete-original", no_argument, 0, 'd'},
-        {"secure-delete", no_argument, 0, 'x'},
-        {"overwrite-file", no_argument, 0, 'f'},
-        {"help", no_argument, 0, 'h'},
-        {"version", no_argument, 0, 'v'},
-        {0, 0, 0, 0}
-    };
-    
-    int opt;
-    while ((opt = getopt_long(argc, argv, "o:P:dxfhv", long_options, NULL)) != -1) {
-        switch(opt) {
-            case 'o': 
-                output_file = malloc(strlen(optarg)+1);
-                if (output_file) strcpy(output_file, optarg);
-                else {
-                    fprintf(stderr, "Failed to allocate memory\n!");
-                    exit(EXIT_FAILURE);
-                }
+    cag_option_context context;
+    cag_option_init(&context, options, CAG_ARRAY_SIZE(options), argc, argv);
+    while (cag_option_fetch(&context)) {
+        switch (cag_option_get_identifier(&context)) {
+            case 'p':
+                password = strdup(cag_option_get_value(&context));
                 break;
-            case 'P': password = optarg; break;
-            case 'd': delete_original_flag = 1; break;
-            case 'x': secure_delete_flag = 1; break;
-            case 'f': overwrite_flag = 1; break;
-            case 'h': help_flag = 1; break;
-            case 'v': printf("Version: %s\n", VERSION); exit(EXIT_SUCCESS);
-            default: exit(EXIT_FAILURE);
+            case 'o':
+                output_file = strdup(cag_option_get_value(&context));
+                break;
+            case 'd':
+                delete_original_flag = 1;
+                break;
+            case 'x':
+                secure_delete_flag = 1;
+                break;
+            case 'f':
+                overwrite_file_flag = 1;
+                break;
+            case 'v':
+                printf("Version: %s\n", VERSION);
+                return EXIT_SUCCESS;
+            case 'h':
+                printf("Usage: decrypt [OPTIONS] file\n");
+                cag_option_print(options, CAG_ARRAY_SIZE(options), stdout);
+                return EXIT_SUCCESS;
+            case '?':
+                cag_option_print_error(&context, stdout);
+                break;
         }
     }
-
-    // Displaying help
-    if (help_flag) {
-        printf("usage: decrypt  [-h] [-P PASSWORD] [-o OUTPUT] [-d | --delete]\n");
-        printf("                [-x | --secure-delete] [-f | --overwrite-file]\n");
-        printf("                file\n\n");
-        printf("Simple decryption tool in C. KDF: Argon2 (ID). Symmetric cipher: AEGIS-256\n\n");
-        printf("positional arguments:\n  file                  file to encrypt\n\n");
-        printf("options:\n");
-        printf("  -h, --help            show this help message and exit\n");
-        printf("  -P PASSWORD, --password PASSWORD\n                        password\n");
-        printf("  -o OUTPUT, --output OUTPUT\n                        output file\n");
-        printf("  -d, --delete          delete original (unencrypted) file without overwriting\n                        (not secure)\n");
-        printf("  -x, --secure-delete   delete original (unencrypted) file with US DoD\n                        5220.22-M 3 pass\n");
-        printf("  -f, --overwrite-file  when you try to encrypt 'test' but directory contains\n                        'test%s' that parameter will allow overwriting\n                        'test%s'\n", FILE_EXTENSION, FILE_EXTENSION);
-        printf("  -v, --version         shows version\n");
-        exit(EXIT_SUCCESS);
-    }
-
-    // Checking for input file
-    if (optind >= argc) {
-        fprintf(stderr, "Expected input file\n");
+    input_file = argv[cag_option_get_index(&context)];
+    // input_file = "hello.txt.cc";
+    if (!input_file) {
+        fprintf(stderr, "Expected input file!");
         exit(EXIT_FAILURE);
     }
-    input_file = argv[optind];
-    // input_file = "test.c";
-    // output_file = "halo";
 
     // Check if both -d and -x were used
     if (delete_original_flag && secure_delete_flag) {
@@ -172,18 +135,6 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Failed to open file.\n");
         exit(EXIT_FAILURE);
     }
-
-    // Checking if output file already exists.
-    if ((access(output_file, F_OK) == 0) && !overwrite_flag) {
-        printf("File %s already exists. Use -f to overwrite\n.", output_file);
-        exit(EXIT_FAILURE);
-    }
-
-    // Getting password without echoing it.
-    if (!password) {
-        password = getpass("Enter password (no echo): ");
-    }
-    sodium_mlock(password, strlen(password));
 
     // If the user has not selected a file output and the file has a standard extension (.cc), the program will use a file without an extension (.cc) as output.
     // If the file does not have a standard extension, the program will require you to specify the file output.
@@ -208,6 +159,20 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // Checking if output file already exists.
+    FILE *file_existence = fopen(output_file, "rb");
+    if (!overwrite_file_flag && file_existence) {
+        fprintf(stderr, "File %s already exists. Use --overwrite-file (-f) to overwrite\n", output_file);
+        fclose(file_existence);
+        return EXIT_FAILURE;
+    }
+    
+    // Getting password without echoing it.
+    if (!password) {
+        password = getpass_secure("Enter password (no echo): ");
+    }
+    sodium_mlock(password, strlen(password));
+
     // Getting file size
     size_t size;
     fseek(fp, 0, SEEK_END);
@@ -227,17 +192,16 @@ int main(int argc, char *argv[]) {
     fread(&opslimit, 1, sizeof(opslimit), fp);
     fread(&memlimit, 1, sizeof(memlimit), fp);
     fread(&saltlen, 1, sizeof(saltlen), fp);
-    unsigned char salt[saltlen];
+    unsigned char *salt = malloc(saltlen);
     unsigned char nonce[crypto_aead_aegis256_NPUBBYTES];
     const long long textlen = size-sizeof(magic_header)-sizeof(opslimit)-sizeof(memlimit)-sizeof(saltlen)-saltlen-crypto_aead_aegis256_NPUBBYTES-32;
-    unsigned char ciphertext_and_mac[textlen+32];
-    unsigned char plaintext[textlen];
+    unsigned char *ciphertext_and_mac = malloc(textlen+32);
+    unsigned char *plaintext = malloc(textlen);
 
-    fread(&salt, 1, saltlen, fp);
+    fread(salt, 1, saltlen, fp);
     fread(&nonce, 1, crypto_aead_aegis256_NPUBBYTES, fp);
     fread(ciphertext_and_mac, 1, textlen+32, fp);
     fclose(fp);
-    
     
     // Generating Argon2 key
     uint8_t key[crypto_aead_aegis256_KEYBYTES];
