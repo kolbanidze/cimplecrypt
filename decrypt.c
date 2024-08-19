@@ -223,6 +223,10 @@ int main(int argc, char *argv[]) {
 
     // Writing plaintext to output file
     fp = fopen(output_file, "wb");
+    if (!fp) {
+        fprintf(stderr, "Failed to create output file!\n");
+        return EXIT_FAILURE;
+    }
     fwrite(plaintext, sizeof(unsigned char), textlen, fp);
     fclose(fp);
     printf("[Success] File '%s' was decrypted. Output file: '%s'\n", input_file, output_file);

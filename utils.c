@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -7,6 +8,7 @@
 #include <unistd.h>
 #endif
 
+// If you change that parameter you need to change scanf in getpass_secure function to MAX_PASS_LEN-1
 #define MAX_PASS_LEN 1024
 #define RANDOM_CHARSET "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
@@ -31,7 +33,6 @@ void restore_echo() {
 
 char *getpass_secure(const char *prompt) {
     static char password[MAX_PASS_LEN];
-    // memset(password, 0, sizeof(password)); // Clear the buffer for security
     sodium_memzero(password, MAX_PASS_LEN);
 
 #ifdef _WIN32
@@ -56,11 +57,6 @@ char *getpass_secure(const char *prompt) {
     fflush(stdout);
     disable_echo();
 
-    // Read the password
-    // if (fgets(password, MAX_PASS_LEN, stdin) == NULL) {
-    //     restore_echo();
-    //     return NULL;
-    // }
     scanf("%1023s", password);
 
     // Restore terminal settings
@@ -126,15 +122,13 @@ void random_rename(const char *filename) {
 void secure_delete(const char *filename) {
     size_t file_size;
     FILE *fp = fopen(filename, "r+b");
-    
+    if (!fp) {
+        perror("An error occurred while securely deleting the file");
+        exit(EXIT_FAILURE);
+    }
     fseek(fp, 0, SEEK_END);
     file_size = ftell(fp);
     fseek(fp, 0, SEEK_SET);
-
-    if (!fp) {
-        fprintf(stderr, "Failed to open file for secure deletion");
-        return;
-    }
 
     // First pass with zeroes
     for (size_t i = 0; i < file_size; i++) {
