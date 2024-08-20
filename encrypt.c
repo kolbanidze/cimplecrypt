@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
         }
     }
     input_file = argv[cag_option_get_index(&context)];
-    // input_file = "encryptme.txt";
+    // input_file = "bin/encrypt";
 
     if (!input_file) {
         fprintf(stderr, "Expected input file!\n");
