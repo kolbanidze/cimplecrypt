@@ -1,16 +1,30 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #ifdef _WIN32
 #include <windows.h>
 #else
 #include <termios.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #endif
 
 // If you change that parameter you need to change scanf in getpass_secure function to MAX_PASS_LEN-1
 #define MAX_PASS_LEN 1024
 #define RANDOM_CHARSET "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+int is_directory(const char *filename) {
+#ifdef _WIN32
+    DWORD fileAttributes = GetFileAttributesA(filename);
+    if (fileAttributes == INVALID_FILE_ATTRIBUTES) {
+        return 0; // File not found or another error
+    }
+    return (fileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
+#else
+    struct stat path_stat;
+    if (stat(filename, &path_stat) != 0) {
+        return 0; // File not found or another error
+    }
+    return S_ISDIR(path_stat.st_mode) ? 1 : 0;
+#endif
+}
 
 void disable_echo() {
 #ifndef _WIN32

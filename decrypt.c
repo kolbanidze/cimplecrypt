@@ -10,7 +10,7 @@
 
 #define FILE_EXTENSION ".cc"
 #define MAGIC_HEADER 0xBADC0DE
-#define VERSION "1.2"
+#define VERSION "1.3"
 
 /*FILE FORMAT: 1-6 -> Header
 +-------+----------------+---------------------+
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
     // Executing sodium_init() to ensure libsodium works correctly
     if (sodium_init() < 0) {
         fprintf(stderr, "Failed to initialize libsodium!\n");
-        exit(1);
+        return EXIT_FAILURE;
     }
 
     // Initialization of pointers and flags
@@ -121,9 +121,14 @@ int main(int argc, char *argv[]) {
     // input_file = "hello.txt.cc";
     if (!input_file) {
         fprintf(stderr, "Expected input file!");
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
+    // Check if input_file is directory
+    if (is_directory(input_file)) {
+        fprintf(stderr, "The selected file is a directory. Please select a file.\n");
+        return EXIT_FAILURE;
+    }
     // Check if both -d and -x were used
     if (delete_original_flag && secure_delete_flag) {
         printf("You have selected both delete and securely delete. The program will assume that original file needs to be securely deleted.");
@@ -133,7 +138,7 @@ int main(int argc, char *argv[]) {
     FILE *fp = fopen(input_file, "rb");
     if (!fp) {
         fprintf(stderr, "Failed to open file.\n");
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     // If the user has not selected a file output and the file has a standard extension (.cc), the program will use a file without an extension (.cc) as output.
@@ -150,12 +155,12 @@ int main(int argc, char *argv[]) {
             }
             else {
                 fprintf(stderr, "Selected file doesn't have %s extension. Select output file!\n", FILE_EXTENSION);
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
             }
         }
         else {
             fprintf(stderr, "Selected file doesn't have %s extension. Select output file!\n", FILE_EXTENSION);
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
     }
 
@@ -187,7 +192,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "The file is corrupted or is not an encrypted cimplecrypt file.\n");
         sodium_munlock(password, strlen(password));
         fclose(fp);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     } 
     fread(&opslimit, 1, sizeof(opslimit), fp);
     fread(&memlimit, 1, sizeof(memlimit), fp);
@@ -211,14 +216,14 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Failed to generate Argon2ID hash! Check file integrity and password.\n");
         sodium_munlock(key, crypto_aead_aegis256_KEYBYTES);
         sodium_munlock(password, strlen(password));
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
     sodium_munlock(password, strlen(password));
     
     unsigned long long length;
     if (crypto_aead_aegis256_decrypt(plaintext, &length, NULL, ciphertext_and_mac, textlen+32, NULL, 0, nonce, key) != 0) {
         fprintf(stderr, "Failed to decrypt!\n");
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     // Writing plaintext to output file
@@ -238,7 +243,7 @@ int main(int argc, char *argv[]) {
         }
         else {
             printf("Unable to delete input file.");
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
     }
     

@@ -15,7 +15,7 @@
 #define MEMLIMIT crypto_pwhash_MEMLIMIT_MODERATE
 #define FILE_EXTENSION ".cc"
 #define MAGIC_HEADER 0xBADC0DE
-#define VERSION "1.2"
+#define VERSION "1.3"
 #define MAX_PASS_LEN 1024
 
 
@@ -166,6 +166,12 @@ int main(int argc, char *argv[]) {
     if (!input_file) {
         fprintf(stderr, "Expected input file!\n");
         exit(EXIT_FAILURE);
+    }
+    
+    // Check if input_file is directory
+    if (is_directory(input_file)) {
+        fprintf(stderr, "The selected file is a directory. Please select a file.\n");
+        return EXIT_FAILURE;
     }
 
     if ((opslimit < OPSLIMIT || memlimit < MEMLIMIT || saltlen < SALT_LEN) && !i_know_what_i_am_doing) {
