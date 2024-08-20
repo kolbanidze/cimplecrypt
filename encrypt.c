@@ -15,7 +15,7 @@
 #define MEMLIMIT crypto_pwhash_MEMLIMIT_MODERATE
 #define FILE_EXTENSION ".cc"
 #define MAGIC_HEADER 0xBADC0DE
-#define VERSION "1.3"
+#define VERSION "1.3.1"
 #define MAX_PASS_LEN 1024
 
 
@@ -187,6 +187,10 @@ int main(int argc, char *argv[]) {
     // If user hasn't specified output file it will save encrypted file in {filename}.sc (if FILE_EXTENSION is .sc).
     if (!output_file) {
         output_file = malloc(strlen(input_file) + strlen(FILE_EXTENSION) + 1);
+        if (output_file == NULL) {
+            fprintf(stderr, "Failed to allocate memory!\n");
+            return EXIT_FAILURE;
+        }
         strcpy(output_file, input_file); // Copying original filename to output_file
         strcat(output_file, FILE_EXTENSION); // Concatenate filename+extension
     }
@@ -207,6 +211,10 @@ int main(int argc, char *argv[]) {
 
     // Generating random salt
     uint8_t *salt = malloc(saltlen);
+    if (salt == NULL) {
+        fprintf(stderr, "Failed to allocate memory!\n");
+        return EXIT_FAILURE;
+    }
     randombytes_buf(salt, saltlen);
     // memset(salt, 0x00, saltlen);
 
@@ -231,12 +239,20 @@ int main(int argc, char *argv[]) {
     file_size = ftell(fp);
     fseek(fp, 0, SEEK_SET);
     unsigned char *file_contents = malloc(file_size);
+    if (file_contents == NULL) {
+        fprintf(stderr, "Failed to allocate memory!\n");
+        return EXIT_FAILURE;
+    }
     // write_file_contents_into_buffer(input_file, file_contents, file_size);
     fread(file_contents, 1, file_size, fp);
     fclose(fp);
     sodium_mlock(file_contents, file_size);
 
     unsigned char *ciphertext = malloc(file_size + crypto_aead_aegis256_ABYTES);
+    if (ciphertext == NULL) {
+        fprintf(stderr, "Failed to allocate memory!\n");
+        return EXIT_FAILURE;
+    }
     unsigned char nonce[crypto_aead_aegis256_NPUBBYTES];
     randombytes_buf(nonce, crypto_aead_aegis256_NPUBBYTES);
     unsigned long long ciphertext_len;
@@ -248,6 +264,7 @@ int main(int argc, char *argv[]) {
     
     sodium_munlock(key, crypto_aead_aegis256_KEYBYTES);
     sodium_munlock(file_contents, file_size);
+    free(file_contents);
 
     fp = fopen(output_file, "wb");
     if (!fp) {
@@ -293,6 +310,8 @@ int main(int argc, char *argv[]) {
     fclose(fp);
     printf("[Success] File %s was encrypted. Output file: %s\n", input_file, output_file);
     free(output_file);
+    free(ciphertext);
+    free(salt);
     
 
     if (delete_original_flag) {

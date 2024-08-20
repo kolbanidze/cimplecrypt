@@ -10,7 +10,7 @@
 
 #define FILE_EXTENSION ".cc"
 #define MAGIC_HEADER 0xBADC0DE
-#define VERSION "1.3"
+#define VERSION "1.3.1"
 
 /*FILE FORMAT: 1-6 -> Header
 +-------+----------------+---------------------+
@@ -150,6 +150,10 @@ int main(int argc, char *argv[]) {
             if (strcmp(extension, FILE_EXTENSION) == 0) {
                 size_t output_size = strlen(input_file)-3;
                 output_file = malloc(output_size+1);
+                if (output_file == NULL) {
+                    fprintf(stderr, "Failed to allocate memory!\n");
+                    return EXIT_FAILURE;
+                }
                 strncpy(output_file, input_file, output_size);
                 output_file[output_size] = '\0';
             }
@@ -198,11 +202,22 @@ int main(int argc, char *argv[]) {
     fread(&memlimit, 1, sizeof(memlimit), fp);
     fread(&saltlen, 1, sizeof(saltlen), fp);
     unsigned char *salt = malloc(saltlen);
+    if (salt == NULL) {
+        fprintf(stderr, "Failed to allocate memory!\n");
+        return EXIT_FAILURE;
+    }
     unsigned char nonce[crypto_aead_aegis256_NPUBBYTES];
     const long long textlen = size-sizeof(magic_header)-sizeof(opslimit)-sizeof(memlimit)-sizeof(saltlen)-saltlen-crypto_aead_aegis256_NPUBBYTES-32;
     unsigned char *ciphertext_and_mac = malloc(textlen+32);
+    if (ciphertext_and_mac == NULL) {
+        fprintf(stderr, "Failed to allocate memory!\n");
+        return EXIT_FAILURE;
+    }
     unsigned char *plaintext = malloc(textlen);
-
+    if (plaintext == NULL) {
+        fprintf(stderr, "Failed to allocate memory!\n");
+        return EXIT_FAILURE;
+    }
     fread(salt, 1, saltlen, fp);
     fread(&nonce, 1, crypto_aead_aegis256_NPUBBYTES, fp);
     fread(ciphertext_and_mac, 1, textlen+32, fp);
@@ -226,6 +241,9 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
+    free(ciphertext_and_mac);
+    free(salt);
+
     // Writing plaintext to output file
     fp = fopen(output_file, "wb");
     if (!fp) {
@@ -236,6 +254,7 @@ int main(int argc, char *argv[]) {
     fclose(fp);
     printf("[Success] File '%s' was decrypted. Output file: '%s'\n", input_file, output_file);
     free(output_file);
+    free(plaintext);
 
     if (delete_original_flag) {
         if (remove(input_file) == 0) {
