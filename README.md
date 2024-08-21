@@ -1,6 +1,6 @@
 # Cimplecrypt
 
-Cross platform simple file encryption in C with libsodium. Created out of boredom during summer vacation. Supports windows (msvc) and linux (gcc). 
+Cross platform simple file encryption in C. Supports Windows and Linux. MacOS untested.
 
 ## Encryption
 For encryption it uses AEGIS-256. As a KDF - Argon2 ID (libsodium implementation).
@@ -13,7 +13,7 @@ Default KDF parameters - OPSLIMIT (CPU cycles) = 3, MEMLIMIT (memory usage) = 25
 
 Libraries: [libsodium](https://doc.libsodium.org/), [cargs](https://github.com/likle/cargs). Licenses for those libraries available in the root of repository.
 
-Required to build: libsodium >= 1.0.19, gcc, make, cargs (located in include directory). 
+Required to build: libsodium >= 1.0.19, gcc, make, cargs (located in include directory).
 
 #### Fedora build example:
 
