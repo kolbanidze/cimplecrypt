@@ -188,7 +188,7 @@ int main(int argc, char *argv[]) {
     if (!output_file) {
         output_file = malloc(strlen(input_file) + strlen(FILE_EXTENSION) + 1);
         if (output_file == NULL) {
-            fprintf(stderr, "Failed to allocate memory!\n");
+            fprintf(stderr, "Failed to allocate memory for output file!\n");
             return EXIT_FAILURE;
         }
         strcpy(output_file, input_file); // Copying original filename to output_file
@@ -212,7 +212,7 @@ int main(int argc, char *argv[]) {
     // Generating random salt
     uint8_t *salt = malloc(saltlen);
     if (salt == NULL) {
-        fprintf(stderr, "Failed to allocate memory!\n");
+        fprintf(stderr, "Failed to allocate memory for salt!\n");
         return EXIT_FAILURE;
     }
     randombytes_buf(salt, saltlen);
@@ -231,7 +231,7 @@ int main(int argc, char *argv[]) {
     // Reading file contents
     FILE *fp = fopen(input_file, "rb");
     if (!fp) {
-        fprintf(stderr, "Failed to open file.");
+        perror("Failed to open input file");
         exit(EXIT_FAILURE);
     }
     size_t file_size;
@@ -240,7 +240,7 @@ int main(int argc, char *argv[]) {
     fseek(fp, 0, SEEK_SET);
     unsigned char *file_contents = malloc(file_size);
     if (file_contents == NULL) {
-        fprintf(stderr, "Failed to allocate memory!\n");
+        fprintf(stderr, "Failed to allocate memory for file contents!\n");
         return EXIT_FAILURE;
     }
     // write_file_contents_into_buffer(input_file, file_contents, file_size);
@@ -250,7 +250,7 @@ int main(int argc, char *argv[]) {
 
     unsigned char *ciphertext = malloc(file_size + crypto_aead_aegis256_ABYTES);
     if (ciphertext == NULL) {
-        fprintf(stderr, "Failed to allocate memory!\n");
+        fprintf(stderr, "Failed to allocate memory for ciphertext!\n");
         return EXIT_FAILURE;
     }
     unsigned char nonce[crypto_aead_aegis256_NPUBBYTES];
@@ -268,7 +268,7 @@ int main(int argc, char *argv[]) {
 
     fp = fopen(output_file, "wb");
     if (!fp) {
-        fprintf(stderr, "Failed to open output file!\n");
+        perror("Failed to open output file");
         exit(EXIT_FAILURE);
     }
     if (fwrite(&magic_header, sizeof(magic_header), 1, fp) != 1) {

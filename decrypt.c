@@ -137,7 +137,7 @@ int main(int argc, char *argv[]) {
     
     FILE *fp = fopen(input_file, "rb");
     if (!fp) {
-        fprintf(stderr, "Failed to open file.\n");
+        perror("Failed to open file");
         return EXIT_FAILURE;
     }
 
@@ -151,7 +151,7 @@ int main(int argc, char *argv[]) {
                 size_t output_size = strlen(input_file)-3;
                 output_file = malloc(output_size+1);
                 if (output_file == NULL) {
-                    fprintf(stderr, "Failed to allocate memory!\n");
+                    fprintf(stderr, "Failed to allocate memory for output file!\n");
                     return EXIT_FAILURE;
                 }
                 strncpy(output_file, input_file, output_size);
@@ -203,19 +203,19 @@ int main(int argc, char *argv[]) {
     fread(&saltlen, 1, sizeof(saltlen), fp);
     unsigned char *salt = malloc(saltlen);
     if (salt == NULL) {
-        fprintf(stderr, "Failed to allocate memory!\n");
+        fprintf(stderr, "Failed to allocate memory for salt!\n");
         return EXIT_FAILURE;
     }
     unsigned char nonce[crypto_aead_aegis256_NPUBBYTES];
     const long long textlen = size-sizeof(magic_header)-sizeof(opslimit)-sizeof(memlimit)-sizeof(saltlen)-saltlen-crypto_aead_aegis256_NPUBBYTES-32;
     unsigned char *ciphertext_and_mac = malloc(textlen+32);
     if (ciphertext_and_mac == NULL) {
-        fprintf(stderr, "Failed to allocate memory!\n");
+        fprintf(stderr, "Failed to allocate memory for ciphertext (and tag)!\n");
         return EXIT_FAILURE;
     }
     unsigned char *plaintext = malloc(textlen);
     if (plaintext == NULL) {
-        fprintf(stderr, "Failed to allocate memory!\n");
+        fprintf(stderr, "Failed to allocate memory for plaintext!\n");
         return EXIT_FAILURE;
     }
     fread(salt, 1, saltlen, fp);
@@ -247,7 +247,7 @@ int main(int argc, char *argv[]) {
     // Writing plaintext to output file
     fp = fopen(output_file, "wb");
     if (!fp) {
-        fprintf(stderr, "Failed to create output file!\n");
+        perror("Failed to create output file");
         return EXIT_FAILURE;
     }
     fwrite(plaintext, sizeof(unsigned char), textlen, fp);

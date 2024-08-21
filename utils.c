@@ -95,7 +95,7 @@ void random_rename(const char *filename) {
     char *new_name = malloc(name_len + 1);
     char *current_name = strdup(filename); // Keep track of the current file name
     if (!new_name || !current_name) {
-        perror("Memory allocation error");
+        fprintf(stderr, "Failed to allocate memory for random renaming!\n");
         free(new_name);
         free(current_name);
         return;
