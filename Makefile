@@ -1,31 +1,57 @@
-# Linux only.
+# Detect OS
+UNAME_S := $(shell uname -s)
 
-default: build buildstatic
+# Define default output directory
+BIN_DIR := bin
 
-LIBSODIUM_VERSION_CHECK := $(shell pkg-config --modversion libsodium 2>/dev/null || echo "not installed")
+# Define OS-specific output filenames
+ifeq ($(UNAME_S), Linux)
+    ENCRYPT_BINARY := $(BIN_DIR)/linux_encrypt
+    DECRYPT_BINARY := $(BIN_DIR)/linux_decrypt
+    STATIC_ENCRYPT_BINARY := $(BIN_DIR)/linux_static_encrypt
+    STATIC_DECRYPT_BINARY := $(BIN_DIR)/linux_static_decrypt
+else ifeq ($(UNAME_S), Darwin)
+    ENCRYPT_BINARY := $(BIN_DIR)/macos_encrypt
+    DECRYPT_BINARY := $(BIN_DIR)/macos_decrypt
+else
+    $(error This Makefile only supports Linux and MacOS)
+endif
 
-check_libsodium_version:
-	@if [ "$(LIBSODIUM_VERSION_CHECK)" != "not installed" ] && [ "$(LIBSODIUM_VERSION_CHECK)" \> "1.0.18" ]; then \
-		echo "libsodium $(LIBSODIUM_VERSION_CHECK) was found, using it..."; \
-	else \
-		echo "libsodium >= 1.0.19 not found, компилируем библиотеку из исходников..."; \
-		exit 1; \
-	fi
+# Compiler and common flags
+CC := gcc
+CFLAGS := -Wall -Iinclude
+LDFLAGS := -lsodium
 
-build:
-	@echo "Building executables."
-	@mkdir -p bin
-	${CC} encrypt.c cargs.c -Wall -o bin/encrypt -lsodium -Iinclude
-	${CC} decrypt.c cargs.c -Wall -o bin/decrypt -lsodium -Iinclude
-	@echo "Executables saved in bin/ directory"
+# Default build target (Linux/MacOS)
+.PHONY: build
+build: $(ENCRYPT_BINARY) $(DECRYPT_BINARY)
+	@echo "Executables saved in $(BIN_DIR)/ directory"
 
-buildstatic:
-	@echo "Building executables statically."
-	@mkdir -p bin
-	${CC} encrypt.c cargs.c -Wall -o bin/encrypt_static -lsodium -Iinclude -static
-	${CC} decrypt.c cargs.c -Wall -o bin/decrypt_static -lsodium -Iinclude -static
-	@echo "Static executables saved in bin/ directory"
+$(ENCRYPT_BINARY): encrypt.c cargs.c
+	@echo "Building $@"
+	@mkdir -p $(BIN_DIR)
+	$(CC) $^ $(CFLAGS) -o $@ $(LDFLAGS)
 
+$(DECRYPT_BINARY): decrypt.c cargs.c
+	@echo "Building $@"
+	@mkdir -p $(BIN_DIR)
+	$(CC) $^ $(CFLAGS) -o $@ $(LDFLAGS)
+
+# Static build target (Linux only)
+.PHONY: static-build
+static-build:
+ifeq ($(UNAME_S), Linux)
+	@echo "Building static executables."
+	@mkdir -p $(BIN_DIR)
+	$(CC) encrypt.c cargs.c $(CFLAGS) -o $(STATIC_ENCRYPT_BINARY) $(LDFLAGS) -static
+	$(CC) decrypt.c cargs.c $(CFLAGS) -o $(STATIC_DECRYPT_BINARY) $(LDFLAGS) -static
+	@echo "Static executables saved in $(BIN_DIR)/ directory"
+else
+	$(error Static build only supported on Linux)
+endif
+
+# Clean target (Linux/MacOS)
+.PHONY: clean
 clean:
-	@echo "Clearing bin folder"
-	@rm -rf bin/*
+	@echo "Clearing $(BIN_DIR) folder"
+	@rm -rf $(BIN_DIR)/*
