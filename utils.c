@@ -10,7 +10,7 @@
 #endif
 
 // If you change that parameter you need to change scanf in getpass_secure function to MAX_PASS_LEN-1
-#define MAX_PASS_LEN 1024
+#define MAX_PASS_LEN 4096
 #define RANDOM_CHARSET "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
 int is_directory(const char *filename) {
@@ -74,7 +74,7 @@ char *getpass_secure(const char *prompt) {
     fflush(stdout);
     disable_echo();
 
-    scanf("%1023s", password);
+    scanf("%4095s", password);
 
     // Restore terminal settings
     restore_echo();

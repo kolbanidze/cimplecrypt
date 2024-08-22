@@ -1,12 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <stdint.h>
-#include <inttypes.h>
 #include <cargs.h>
 #include <sodium.h>
-#include <string.h>
 #include "utils.c"
 
 #define KEY_LEN crypto_aead_aegis256_KEYBYTES
@@ -15,8 +12,7 @@
 #define MEMLIMIT crypto_pwhash_MEMLIMIT_MODERATE
 #define FILE_EXTENSION ".cc"
 #define MAGIC_HEADER 0xBADC0DE
-#define VERSION "1.3.1"
-#define MAX_PASS_LEN 1024
+#define VERSION "1.4"
 
 
 /*FILE FORMAT: 1-6 -> Header
@@ -161,7 +157,6 @@ int main(int argc, char *argv[]) {
         }
     }
     input_file = argv[cag_option_get_index(&context)];
-    // input_file = "bin/encrypt";
 
     if (!input_file) {
         fprintf(stderr, "Expected input file!\n");
@@ -174,6 +169,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
+    // Validating user KDF parameters
     if ((opslimit < OPSLIMIT || memlimit < MEMLIMIT || saltlen < SALT_LEN) && !i_know_what_i_am_doing) {
         printf("The selected parameters are below the recommended security level. It is strongly recommended not to use the selected parameters unless you know what you are doing.\n");
         printf("If you know what you are doing, then use the --i-know-what-i-am-doing (-Q) parameter.\n");
@@ -216,7 +212,6 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
     randombytes_buf(salt, saltlen);
-    // memset(salt, 0x00, saltlen);
 
     // Generating Argon2 key
     uint8_t key[crypto_aead_aegis256_KEYBYTES];
@@ -243,7 +238,6 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Failed to allocate memory for file contents!\n");
         return EXIT_FAILURE;
     }
-    // write_file_contents_into_buffer(input_file, file_contents, file_size);
     fread(file_contents, 1, file_size, fp);
     fclose(fp);
     sodium_mlock(file_contents, file_size);

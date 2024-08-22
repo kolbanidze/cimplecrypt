@@ -4,13 +4,12 @@
 #include <sys/types.h>
 #include <stdint.h>
 #include <sodium.h>
-#include <string.h>
 #include <cargs.h>
 #include "utils.c"
 
 #define FILE_EXTENSION ".cc"
 #define MAGIC_HEADER 0xBADC0DE
-#define VERSION "1.3.1"
+#define VERSION "1.4"
 
 /*FILE FORMAT: 1-6 -> Header
 +-------+----------------+---------------------+
@@ -82,7 +81,6 @@ int main(int argc, char *argv[]) {
     int delete_original_flag = 0;
     int secure_delete_flag = 0;
     int overwrite_file_flag = 0;
-
     const uint32_t magic_header = MAGIC_HEADER;
     
     // Parsing cli parameters
@@ -118,24 +116,27 @@ int main(int argc, char *argv[]) {
         }
     }
     input_file = argv[cag_option_get_index(&context)];
-    // input_file = "hello.txt.cc";
+
+    // Checking if an input file was specified.
     if (!input_file) {
         fprintf(stderr, "Expected input file!");
         return EXIT_FAILURE;
     }
 
-    // Check if input_file is directory
+    // Checking if input_file is directory
     if (is_directory(input_file)) {
         fprintf(stderr, "The selected file is a directory. Please select a file.\n");
         return EXIT_FAILURE;
     }
-    // Check if both -d and -x were used
+    // Checking if both -d and -x were used
     if (delete_original_flag && secure_delete_flag) {
         printf("You have selected both delete and securely delete. The program will assume that original file needs to be securely deleted.");
         delete_original_flag = 0;
     }
     
+    // Opening file
     FILE *fp = fopen(input_file, "rb");
+    // Checking if file was successfully opened
     if (!fp) {
         perror("Failed to open file");
         return EXIT_FAILURE;
@@ -148,7 +149,7 @@ int main(int argc, char *argv[]) {
         extension = strrchr(input_file, '.');
         if (extension != NULL) {
             if (strcmp(extension, FILE_EXTENSION) == 0) {
-                size_t output_size = strlen(input_file)-3;
+                size_t output_size = strlen(input_file)-strlen(FILE_EXTENSION);
                 output_file = malloc(output_size+1);
                 if (output_file == NULL) {
                     fprintf(stderr, "Failed to allocate memory for output file!\n");

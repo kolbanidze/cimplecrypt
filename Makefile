@@ -1,3 +1,5 @@
+# Linux and MacOS only!
+
 # Detect OS
 UNAME_S := $(shell uname -s)
 
