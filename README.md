@@ -15,7 +15,7 @@ Libraries: [libsodium](https://doc.libsodium.org/), [cargs](https://github.com/l
 
 Required to build: libsodium >= 1.0.19, gcc, make, cargs (located in include directory).
 
-#### Fedora build example:
+#### Fedora:
 
 `sudo dnf install make gcc libsodium libsodium-devel libsodium-static glibc-static`
 
@@ -30,7 +30,18 @@ Compiled binaries will be in bin/ directory
 At the time of writing, the Ubuntu repositories contain Libsodium version 1.0.18. To build, you will need to install a newer version (1.0.19 and above). This can be done by [building Libsodium yourself](https://libsodium.gitbook.io/doc/installation#compilation-on-unix-like-systems).
 
 ### Windows
-From developer command prompt for visual studio execute `build_win.bat`
+
+Download repo. From developer command prompt for visual studio execute `build_win.bat`
+
+### MacOS
+
+`brew install libsodium`
+
+`git clone https://github.com/kolbanidze/cimplecrypt`
+
+`cd cimplecrypt`
+
+`make`
 
 ## Usage
 
