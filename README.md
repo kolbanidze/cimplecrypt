@@ -1,6 +1,6 @@
 # Cimplecrypt
 
-Cross platform simple file encryption in C. Supports Windows and Linux. MacOS untested.
+Cross platform simple file encryption in C. Supports Windows, Linux and MacOS (builds available).
 
 ## Encryption
 For encryption it uses AEGIS-256. As a KDF - Argon2 ID (libsodium implementation).
