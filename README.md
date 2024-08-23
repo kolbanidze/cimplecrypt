@@ -1,6 +1,6 @@
 # Cimplecrypt
 
-Cross platform simple file encryption in C. Supports Windows, Linux and MacOS (builds available).
+Cross platform simple file encryption in C. Supports Windows, Linux and MacOS (x64 builds available).
 
 ## Encryption
 For encryption it uses AEGIS-256. As a KDF - Argon2 ID (libsodium implementation).
@@ -40,6 +40,22 @@ Download repo. From developer command prompt for visual studio execute `build_wi
 `git clone https://github.com/kolbanidze/cimplecrypt`
 
 `cd cimplecrypt`
+
+`make`
+
+### Termux
+
+`pkg update`
+
+`pkg upgrade`
+
+`pkg install git make clang libsodium`
+
+`git clone https://github.com/kolbanidze/cimplecrypt`
+
+`cd cimplecrypt`
+
+`make clean` by default bin folder contain x64 builds
 
 `make`
 
