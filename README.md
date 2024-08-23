@@ -31,7 +31,7 @@ At the time of writing, the Ubuntu repositories contain Libsodium version 1.0.18
 
 ### Windows
 
-Download repo. From developer command prompt for visual studio execute `build_win.bat`
+Download repo. Install [visual studio](https://visualstudio.microsoft.com/downloads/) build tools. From developer command prompt for visual studio execute `build_win.bat`.
 
 ### MacOS
 
